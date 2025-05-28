@@ -1,0 +1,17 @@
+- name: task level vairables
+  hosts: local
+  connection: local
+  vars:
+    COURSE: DevOps with AWS
+    DURATION: 45HRs
+    TRAINER: Dileep
+  tasks:
+  - name: Print Course information
+    ansible.builtin.debug:
+      msg: " Hello course is {{ COURSE }} duration is {{ DURATION }} and trainer is {{ TRAINER }} "
+
+  - name: Print Course information again
+    vars:
+      COURSE: Ansible
+    ansible.builtin.debug:
+      msg: " Hello couse is {{ COURSE }} duration is {{ DURATION }} and trainer is {{ TRAINER }} "
