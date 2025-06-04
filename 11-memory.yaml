@@ -1,5 +1,6 @@
 - name: Setup CloudWatch Agent for memory utilization
-  hosts: ec2_instances
+  hosts: local
+  connection: local
   become: true
   tasks:
 
