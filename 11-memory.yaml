@@ -1,23 +1,36 @@
-- name: Setup CloudWatch Agent for memory utilization
+- name: Setup CloudWatch Agent on RHEL 9 EC2 for memory utilization
   hosts: local
   connection: local
   become: true
+  vars:
+    cw_agent_config_path: /opt/aws/amazon-cloudwatch-agent/bin/config.json
+    cw_agent_rpm_url: https://s3.amazonaws.com/amazoncloudwatch-agent/redhat/amd64/latest/amazon-cloudwatch-agent.rpm
+
   tasks:
 
-    - name: Install CloudWatch Agent (Amazon Linux / RHEL)
-      yum:
-        name: amazon-cloudwatch-agent
-        state: present
-
-    - name: Create CloudWatch Agent config directory
+    - name: Ensure required directories exist
       file:
-        path: /opt/aws/amazon-cloudwatch-agent/bin
+        path: "{{ item }}"
         state: directory
         mode: '0755'
+      loop:
+        - /opt/aws/amazon-cloudwatch-agent
+        - /opt/aws/amazon-cloudwatch-agent/bin
 
-    - name: Upload CloudWatch Agent config file
+    - name: Download CloudWatch Agent RPM for RHEL
+      get_url:
+        url: "{{ cw_agent_rpm_url }}"
+        dest: /tmp/amazon-cloudwatch-agent.rpm
+        mode: '0644'
+
+    - name: Install CloudWatch Agent using dnf
+      dnf:
+        name: /tmp/amazon-cloudwatch-agent.rpm
+        state: present
+
+    - name: Upload CloudWatch Agent config for memory usage
       copy:
-        dest: /opt/aws/amazon-cloudwatch-agent/bin/config.json
+        dest: "{{ cw_agent_config_path }}"
         content: |
           {
             "metrics": {
@@ -36,10 +49,10 @@
           }
         mode: '0644'
 
-    - name: Start CloudWatch Agent with config
+    - name: Start CloudWatch Agent with memory config
       command: >
         /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl
         -a fetch-config
         -m ec2
-        -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json
+        -c file:{{ cw_agent_config_path }}
         -s
