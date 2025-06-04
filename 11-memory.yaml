@@ -23,10 +23,11 @@
         dest: /tmp/amazon-cloudwatch-agent.rpm
         mode: '0644'
 
-    - name: Install CloudWatch Agent using dnf
+    - name: Install CloudWatch Agent using dnf (skip GPG check)
       dnf:
         name: /tmp/amazon-cloudwatch-agent.rpm
         state: present
+        disable_gpg_check: true
 
     - name: Upload CloudWatch Agent config for memory usage
       copy:
